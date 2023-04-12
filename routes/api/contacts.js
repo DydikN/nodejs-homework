@@ -8,7 +8,7 @@ const { schemas } = require("../../models/contact");
 
 const router = express.Router();
 
-const ctrl = require("../../controllers");
+const ctrl = require("../../controllers/contacts-controllers");
 
 router.get("/", ctrl.getAllContacts);
 
