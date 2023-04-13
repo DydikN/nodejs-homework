@@ -4,7 +4,15 @@ const { HttpError } = require("../helpers");
 const { Contact } = require("../models/contact");
 
 const getAllContacts = async (req, res) => {
-  res.json(await Contact.find());
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 10, favourite = false } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+    favourite,
+  }).populate("owner", "email subscription");
+  res.json(result);
 };
 
 const getContactById = async (req, res, next) => {
@@ -21,7 +29,9 @@ const getContactById = async (req, res, next) => {
 };
 
 const addNewContact = async (req, res) => {
-  const newContact = await Contact.create(req.body);
+  const { _id: owner } = req.user;
+
+  const newContact = await Contact.create({ ...req.body, owner });
   res.status(201).json(newContact);
 };
 
