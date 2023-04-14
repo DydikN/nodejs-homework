@@ -7,11 +7,14 @@ const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10, favourite = false } = req.query;
   const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, "-createdAt -updatedAt", {
+
+  const filter = { owner, favourite };
+
+  const result = await Contact.find(filter, "-createdAt -updatedAt", {
     skip,
     limit,
-    favourite,
   }).populate("owner", "email subscription");
+
   res.json(result);
 };
 
