@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const fs = require("fs/promises");
 const path = require("path");
+const Jimp = require("jimp");
 
 const { ctrlWrapper } = require("../utils");
 const { HttpError } = require("../helpers");
@@ -84,8 +85,13 @@ const updAvatar = async (req, res) => {
     throw HttpError(400, "Please select photo");
   }
   const { path: tempUpload, filename } = req.file;
+  console.log(tempUpload);
+  const image = await Jimp.read(tempUpload);
+  await image.resize(250, 250).writeAsync(tempUpload);
   const avatarName = `${_id}_${filename}`;
+
   const resultUpload = path.join(avatarDir, avatarName);
+
   await fs.rename(tempUpload, resultUpload);
   const avatarURL = path.join("avatars", avatarName);
   await User.findByIdAndUpdate(_id, { avatarURL });
