@@ -79,7 +79,10 @@ const logout = async (req, res) => {
 
 const updAvatar = async (req, res) => {
   const { _id } = req.user;
-  console.log(req);
+
+  if (!req.file) {
+    throw HttpError(400, "Please select photo");
+  }
   const { path: tempUpload, filename } = req.file;
   const avatarName = `${_id}_${filename}`;
   const resultUpload = path.join(avatarDir, avatarName);
