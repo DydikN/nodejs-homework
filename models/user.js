@@ -62,9 +62,16 @@ const login = Joi.object({
   }),
 });
 
+const resendEmail = Joi.object({
+  email: Joi.string().required().messages({
+    "any.required": `missing required "email" field`,
+  }),
+});
+
 const schemas = {
   register,
   login,
+  resendEmail,
 };
 
 const User = model("user", userSchema);

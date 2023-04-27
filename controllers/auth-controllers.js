@@ -15,9 +15,7 @@ const { SECRET_KEY, BASE_URL } = process.env;
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
-console.log(BASE_URL);
-
-const register = async (req, res, next) => {
+const register = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
@@ -38,11 +36,11 @@ const register = async (req, res, next) => {
 
   const verifyEmail = {
     to: email,
-    subject: "Verifycation",
+    subject: "Verification",
     html: `<a target="_blank" href=${BASE_URL}/api/users/verify/${verificationToken}>Click to verify<a>`,
   };
 
-  sendEmail(verifyEmail);
+  await sendEmail(verifyEmail);
 
   res.status(201).json({
     email: result.email,
@@ -70,7 +68,32 @@ const verify = async (req, res) => {
   });
 };
 
-const login = async (req, res, next) => {
+const resendVerificationEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw HttpError(404, "Email not found");
+  }
+
+  if (user.verify) {
+    throw HttpError(404, "Verification has already been passed");
+  }
+
+  const verifyEmail = {
+    to: email,
+    subject: "Verification",
+    html: `<a target="_blank" href=${BASE_URL}/api/users/verify/${user.verificationToken}>Click to verify<a>`,
+  };
+
+  await sendEmail(verifyEmail);
+
+  res.json({
+    message: "Email resend success",
+  });
+};
+
+const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
@@ -136,6 +159,7 @@ const updAvatar = async (req, res) => {
 module.exports = {
   register: ctrlWrapper(register),
   verify: ctrlWrapper(verify),
+  resendVerificationEmail: ctrlWrapper(resendVerificationEmail),
   login: ctrlWrapper(login),
   getCurrent: ctrlWrapper(getCurrent),
   logout: ctrlWrapper(logout),
